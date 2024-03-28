@@ -382,11 +382,11 @@ void buildOpTable(map<string, OpCode> &opTable)
 }
 
 // creatinng a new symbol encountered
-Symbol *createSymbol(string label, ll locCtr, BlockTable block)
+Symbol *createSymbol(string label, ll locationCtr, BlockTable block)
 {
     Symbol *st = new Symbol;
     st->label = label;
-    st->location = locCtr;
+    st->location = locationCtr;
     st->block = block;
     return st;
 }
@@ -415,14 +415,14 @@ Literal createLiteral(string name, BlockTable current, ll litSize)
     2.if lablel not present in symbolTable process
     3.return error if already exists
 */
-bool enterSymbolTab(parsedLine &line, map<string, Symbol> &symTab, BlockTable active, int locCtr)
+bool enterSymbolTab(parsedLine &line, map<string, Symbol> &symbolTable, BlockTable current, ll locationCtr)
 {
     if (line.label == "")
     {
         line.err = "Label can't be empty";
         return 1;
     }
-    else if (symTab.find(line.label) != symTab.end())
+    else if (symbolTable.find(line.label) != symbolTable.end())
     {
         line.err = "Label " + line.label + " already exits, can't be redeclared.";
         return 1;
@@ -452,10 +452,10 @@ bool enterSymbolTab(parsedLine &line, map<string, Symbol> &symTab, BlockTable ac
 
                 string validArithmeticOperations = "+-";
                 string symLabel = "";
-                deque<pair<Symbol, int>> lable;
+                deque<pair<Symbol, ll>> lable;
                 deque<string> operations;
-                int R = 0;
-                for (int i = 0; i < line.op1.length(); i++)
+                ll R = 0;
+                for (ll i = 0; i < line.op1.length(); i++)
                 {
                     if (validArithmeticOperations.find(line.op1[i]) == string::npos)
                     {
@@ -470,7 +470,7 @@ bool enterSymbolTab(parsedLine &line, map<string, Symbol> &symTab, BlockTable ac
                             symLabel = "";
                             continue;
                         }
-                        if (symTab.find(symLabel) == symTab.end())
+                        if (symbolTable.find(symLabel) == symbolTable.end())
                         {
                             line.err = "Undefined symbol : " + symLabel;
                             return true;
@@ -480,7 +480,7 @@ bool enterSymbolTab(parsedLine &line, map<string, Symbol> &symTab, BlockTable ac
                             line.err = "Invalid Expression";
                             return true;
                         }
-                        auto symbol = symTab.find(symLabel)->second;
+                        auto symbol = symbolTable.find(symLabel)->second;
                         lable.push_back({symbol, getRelativity(symbol)});
                         operations.push_back(getString(line.op1[i]));
                         symLabel = "";
@@ -490,19 +490,19 @@ bool enterSymbolTab(parsedLine &line, map<string, Symbol> &symTab, BlockTable ac
                 if (isNumeric(symLabel))
                 {
                     num = true;
-                    lable.push_back({*createSymbol(line.label, stoi(symLabel), active), 0});
+                    lable.push_back({*createSymbol(line.label, stoi(symLabel), current), 0});
                     symLabel = "";
                 }
                 if (!num)
                 {
-                    if (symTab.find(symLabel) == symTab.end())
+                    if (symbolTable.find(symLabel) == symbolTable.end())
                     {
                         line.err = "Undefined symbol : " + symLabel;
                         return true;
                     }
-                    auto symbol = symTab.find(symLabel)->second;
+                    auto symbol = symbolTable.find(symLabel)->second;
 
-                    lable.push_back({symbol, getRelativity(symTab.find(symLabel)->second)});
+                    lable.push_back({symbol, getRelativity(symbolTable.find(symLabel)->second)});
                 }
                 while (!lable.empty() && !operations.empty())
                 {
@@ -513,7 +513,7 @@ bool enterSymbolTab(parsedLine &line, map<string, Symbol> &symTab, BlockTable ac
                     string arith = operations.front();
                     operations.pop_front();
                     ll location = 0;
-                    int relativity = 0;
+                    ll relativity = 0;
                     if (arith == "+")
                     {
                         location = op1.first.location + op2.first.location; // two symbols must be in same block
@@ -524,7 +524,7 @@ bool enterSymbolTab(parsedLine &line, map<string, Symbol> &symTab, BlockTable ac
                         location = op1.first.location - op2.first.location;
                         relativity = op1.second - op2.second;
                     }
-                    lable.push_front({*createSymbol(line.label, location, active), relativity});
+                    lable.push_front({*createSymbol(line.label, location, current), relativity});
                 }
                 if (lable.front().second == 0 or lable.front().second == 1)
                 {
@@ -537,7 +537,7 @@ bool enterSymbolTab(parsedLine &line, map<string, Symbol> &symTab, BlockTable ac
                     {
                         ss.flags = "R";
                     }
-                    symTab[line.label] = ss;
+                    symbolTable[line.label] = ss;
                 }
                 else
                 {
@@ -554,6 +554,62 @@ bool enterSymbolTab(parsedLine &line, map<string, Symbol> &symTab, BlockTable ac
     }
 }
 
+void manageLitTab(map<string, Literal> &lt, ll &locationCtr, vector<parsedLine> &v, vector<pair<ll, parsedLine>> &literals, ll index, BlockTable current)
+{
+    for (auto it = lt.begin(); it != lt.end(); it++)
+    {
+        if (!it->second.dumped)
+        {
+            it->second.dumped = true;
+            it->second.block = current;
+            parsedLine p;
+            it->second.address = locationCtr;
+            p.opcode = "*";
+            p.op1 = it->second.value;
+            p.location = locationCtr;
+            literals.push_back({index, p});
+            // v.insert(v.begin() + index, p);
+            // printParsedLineInterMediate(p); // insert into vector
+            locationCtr += it->second.size;
+        }
+    }
+}
+
+void manageBlocks(map<string, BlockTable> &blockTable, map<string, Symbol> &symbolTable, long long &programLength, ll &startingAddress, map<string, Literal> &literalTable)
+{
+    vector<BlockTable> v;
+
+    // program length = sum of length of all block
+    programLength = 0;
+    for (auto it = blockTable.begin(); it != blockTable.end(); ++it)
+    {
+        programLength += it->second.locationCtr;
+        v.push_back(it->second);
+    }
+    sort(v.begin(), v.end(), comparator);
+    v[0].blockLength = v[0].locationCtr;
+    v[0].startingAddress = startingAddress;
+    blockTable[v[0].name] = v[0];
+
+    for (auto it = v.begin() + 1; it != v.end(); ++it)
+    {
+        auto prev = it - 1;
+        it->blockLength = it->locationCtr;
+        it->startingAddress = prev->startingAddress + prev->blockLength;
+        it->locationCtr = 0;
+        blockTable[it->name] = *it;
+    }
+    // reassigning blocks after ordering them
+    for (auto &sym : symbolTable)
+    {
+        sym.second.block = blockTable[sym.second.block.name];
+    }
+    // reassigning blocks after ordering them
+    for (auto &lit : literalTable)
+    {
+        lit.second.block = blockTable[lit.second.block.name];
+    }
+}
 // Called on LTORG and at program end
 bool litsComparator(pair<ll, parsedLine> &p1, pair<ll, parsedLine> &p2)
 {
