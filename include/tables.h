@@ -575,7 +575,7 @@ void manageLitTab(map<string, Literal> &lt, ll &locationCtr, vector<parsedLine> 
     }
 }
 
-void manageBlocks(map<string, BlockTable> &blockTable, map<string, Symbol> &symbolTable, long long &programLength, ll &startingAddress, map<string, Literal> &literalTable)
+void manageBlocks(map<string, BlockTable> &blockTable, map<string, Symbol> &symbolTable, ll &programLength, ll &startingAddress, map<string, Literal> &literalTable)
 {
     vector<BlockTable> v;
 
