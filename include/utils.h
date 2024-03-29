@@ -151,10 +151,10 @@ pair<int, int> genObjcode(ObjCode obj, parsedLine &pl)
     {
         return {obj.isWord, 3};
     }
-    int op1 = obj.ni + obj.opCode;
+    int op1 = obj.ni + obj.opcode;
     if (obj.isOnlyOpcode)
     {
-        return {obj.opCode, 1};
+        return {obj.opcode, 1};
     }
     if (obj.isData)
     {

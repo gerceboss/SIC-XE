@@ -40,7 +40,7 @@ struct ObjCode
     bool hasReg = false;       // 2 byte instruction
     bool isOnlyOpcode = false; // 1 byte instruction
     ll isWord = -10;
-    ll opCode;
+    ll opcode;
     ll displacement;
     ll reg1, reg2;
     ll ni, xbpe;
