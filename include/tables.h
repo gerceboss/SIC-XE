@@ -415,6 +415,7 @@ Literal createLiteral(string name, BlockTable current, ll litSize)
     2.if lablel not present in symbolTable process
     3.return error if already exists
 */
+// pass everything as a reference so that the real variables are changed
 bool enterSymbolTab(parsedLine &line, map<string, Symbol> &symbolTable, BlockTable current, ll locationCtr)
 {
     if (line.label == "")
@@ -610,14 +611,17 @@ void manageBlocks(map<string, BlockTable> &blockTable, map<string, Symbol> &symb
         lit.second.block = blockTable[lit.second.block.name];
     }
 }
+
 // Called on LTORG and at program end
 bool litsComparator(pair<ll, parsedLine> &p1, pair<ll, parsedLine> &p2)
 {
     return p1.second.location < p2.second.location;
 }
+
 // manage blocks at the END
 bool comparator(BlockTable block1, BlockTable block2)
 {
     return block1.number < block2.number;
 }
+
 #endif

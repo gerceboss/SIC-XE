@@ -16,6 +16,7 @@ struct OpCode
     ll opcode;
     ll possibleFormat;
 };
+
 struct Symbol
 {
     string label;
@@ -23,6 +24,7 @@ struct Symbol
     BlockTable block;
     string flags = "R";
 };
+
 struct Literal
 {
     string value;
@@ -31,6 +33,7 @@ struct Literal
     ll size;
     bool dumped = false;
 };
+
 struct ObjCode
 {
     bool isData = false;       // has some operand
@@ -53,19 +56,21 @@ struct BlockTable
     ll startingAddress = 0; // default as of now
     ll blockLength;
 };
+
 struct parsedLine
 {
     string label;
     string opcode;
     string op1;
     string op2;
-    string err;
+    string err; // error of try-catch block to be displayed if any
     ll location;
     bool isComment = false;
     bool isFormat4 = false;
     bool isEmpty = false;
     ObjCode objCode;
 };
+
 struct TextRecord
 {
     ll startingAddress;
@@ -73,6 +78,7 @@ struct TextRecord
     string text;
     string label;
 };
+
 struct ModificationRecord
 {
     char label = 'M';
