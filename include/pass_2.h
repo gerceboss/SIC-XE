@@ -9,7 +9,8 @@
 #include "structs.h"
 using namespace std;
 
-bool createObjCodeForWord(parsedLine &line) // create object code for WORD
+// create object code for WORD
+bool createObjCodeForWord(parsedLine &line)
 {
     ObjCode obj;
     if (line.op1 == "")
@@ -27,7 +28,8 @@ bool createObjCodeForWord(parsedLine &line) // create object code for WORD
     return true;
 }
 
-bool createObjectCodeForData(parsedLine &pl, ll subStrIndex) // create object code for BYTE
+// create object code for BYTE
+bool createObjectCodeForData(parsedLine &pl, ll subStrIndex)
 {
     ObjCode obj;
     obj.isData = true;
@@ -49,7 +51,8 @@ bool createObjectCodeForData(parsedLine &pl, ll subStrIndex) // create object co
     return false;
 }
 
-bool createObjectCodeWithRegisters(parsedLine &pl, map<string, OpCode> &opTab, map<string, ll> &regs) // format 2
+// format 2
+bool createObjectCodeWithRegisters(parsedLine &pl, map<string, OpCode> &opTab, map<string, ll> &registers)
 {
     ObjCode obj;
     obj.ni = 3;
@@ -61,32 +64,33 @@ bool createObjectCodeWithRegisters(parsedLine &pl, map<string, OpCode> &opTab, m
             pl.err = "Too many arguments for this opcode";
             return true;
         }
-        if (regs.find(pl.op1) == regs.end()) // invalid register
+        if (registers.find(pl.op1) == registers.end()) // invalid register
         {
             pl.err = "Not a valid register " + pl.op1;
             return true;
         }
         obj.hasReg = true;
-        obj.reg1 = regs.find(pl.op1)->second;
+        obj.reg1 = registers.find(pl.op1)->second;
         obj.reg2 = -1;
         obj.opcode = op;
         pl.objCode = obj;
         return false;
     }
-    if (regs.find(pl.op1) == regs.end() || regs.find(pl.op2) == regs.end())
+    if (registers.find(pl.op1) == registers.end() || registers.find(pl.op2) == registers.end())
     {
         pl.err = "Not a valid register " + pl.op1 + " or " + pl.op2;
         return true;
     }
     obj.hasReg = true;
-    obj.reg1 = regs.find(pl.op1)->second; //
-    obj.reg2 = regs.find(pl.op2)->second;
+    obj.reg1 = registers.find(pl.op1)->second;
+    obj.reg2 = registers.find(pl.op2)->second;
     obj.opcode = op;
     pl.objCode = obj;
     return false;
 }
 
-bool createObjectCodeWithOnlyOpcode(parsedLine &pl, map<string, OpCode> &opTab) // format 1
+// format 1
+bool createObjectCodeWithOnlyOpcode(parsedLine &pl, map<string, OpCode> &opTab)
 {
     ObjCode obj;
     ll op = opTab.find(pl.opcode)->second.opcode;
@@ -103,11 +107,11 @@ ModificationRecord createModificationRecord(ll start, ll modify)
     return m;
 }
 
-Symbol getSymbol(map<string, Symbol> &symTab, parsedLine &pl, ll substrIndex)
+Symbol getSymbol(map<string, Symbol> &symbolTable, parsedLine &pl, ll substrIndex)
 {
     string str = pl.op1.substr(substrIndex);
-    auto symbol = symTab.find(str);
-    if (symbol == symTab.end())
+    auto symbol = symbolTable.find(str);
+    if (symbol == symbolTable.end())
     {
         pl.err = "Undefined Label";
         throw pl.err;
@@ -115,12 +119,12 @@ Symbol getSymbol(map<string, Symbol> &symTab, parsedLine &pl, ll substrIndex)
     return symbol->second;
 }
 
-ObjCode pcOrBaseRelativeAddressing(map<string, Symbol> &symTab, map<string, OpCode> &opTab, ll &locationCtr, parsedLine &pl, ll ni, ll subStrIndex, vector<ModificationRecord> &modi, bool &base, ll &baseRegister)
+ObjCode pcOrBaseRelativeAddressing(map<string, Symbol> &symbolTable, map<string, OpCode> &opTab, ll &locationCtr, parsedLine &pl, ll ni, ll subStrIndex, vector<ModificationRecord> &modi, bool &base, ll &baseRegister)
 {
     ObjCode obj;
-    auto symbol = getSymbol(symTab, pl, subStrIndex);
+    auto symbol = getSymbol(symbolTable, pl, subStrIndex);
     bool isAbsolute = symbol.flags == "A";
-    long long effectiveLoc = symbol.block.startingAddress + symbol.location;
+    ll effectiveLoc = symbol.block.startingAddress + symbol.location;
     bool simple = false;
     ll isIndexed = 0;
     if (pl.op2 != "")
@@ -186,7 +190,7 @@ ObjCode pcOrBaseRelativeAddressing(map<string, Symbol> &symTab, map<string, OpCo
         }
         else if (simple)
         {
-            long long simpleLoc = symbol.location;
+            ll simpleLoc = symbol.location;
             if (validf3(simpleLoc))
             {
                 obj.format = 3;
@@ -205,7 +209,7 @@ ObjCode pcOrBaseRelativeAddressing(map<string, Symbol> &symTab, map<string, OpCo
     }
 }
 
-bool createObjectCodeForInstruction(parsedLine &pl, map<string, OpCode> &opTab, map<string, Symbol> &symTab, map<string, Literal> &litTab, long long &locationCtr, vector<ModificationRecord> &modi, bool &base, ll &baseRegister)
+bool createObjectCodeForInstruction(parsedLine &pl, map<string, OpCode> &opTab, map<string, Symbol> &symbolTable, map<string, Literal> &literalTable, ll &locationCtr, vector<ModificationRecord> &modi, bool &base, ll &baseRegister)
 {
 
     try
@@ -225,7 +229,7 @@ bool createObjectCodeForInstruction(parsedLine &pl, map<string, OpCode> &opTab, 
 
         if (pl.op1[0] == '@')
         {
-            obj = pcOrBaseRelativeAddressing(symTab, opTab, locationCtr, pl, 2, 1, modi, base, baseRegister);
+            obj = pcOrBaseRelativeAddressing(symbolTable, opTab, locationCtr, pl, 2, 1, modi, base, baseRegister);
         }
         else if (pl.op1[0] == '#')
         {
@@ -275,9 +279,9 @@ bool createObjectCodeForInstruction(parsedLine &pl, map<string, OpCode> &opTab, 
             }
             else
             {
-                auto symbol = getSymbol(symTab, pl, 1);
+                auto symbol = getSymbol(symbolTable, pl, 1);
                 bool isAbsolute = symbol.flags == "A";
-                long long effectiveLoc = symbol.block.startingAddress + symbol.location;
+                ll effectiveLoc = symbol.block.startingAddress + symbol.location;
                 bool simple = false;
 
                 if (isAbsolute)
@@ -336,7 +340,7 @@ bool createObjectCodeForInstruction(parsedLine &pl, map<string, OpCode> &opTab, 
                     }
                     else if (simple && !isAbsolute)
                     {
-                        long long simpleLoc = symbol.location;
+                        ll simpleLoc = symbol.location;
                         if (validf3(simpleLoc))
                         {
                             obj.format = 3;
@@ -359,12 +363,12 @@ bool createObjectCodeForInstruction(parsedLine &pl, map<string, OpCode> &opTab, 
         }
         else if (pl.op1[0] == '=')
         {
-            auto literal = litTab.find(pl.op1)->second;
+            auto literal = literalTable.find(pl.op1)->second;
             bool simple = false;
 
             if (pl.isFormat4)
             {
-                long long effectiveLoc = literal.block.startingAddress + literal.address;
+                ll effectiveLoc = literal.block.startingAddress + literal.address;
                 if (validf4(effectiveLoc))
                 {
                     obj.format = 4;
@@ -382,7 +386,7 @@ bool createObjectCodeForInstruction(parsedLine &pl, map<string, OpCode> &opTab, 
             else
             {
 
-                long long effectiveLoc = literal.block.startingAddress + literal.address - locationCtr;
+                ll effectiveLoc = literal.block.startingAddress + literal.address - locationCtr;
                 if (validf3(effectiveLoc))
                 {
                     obj.format = 3;
@@ -409,7 +413,7 @@ bool createObjectCodeForInstruction(parsedLine &pl, map<string, OpCode> &opTab, 
                 }
                 else if (simple)
                 {
-                    long long simpleLoc = literal.address;
+                    ll simpleLoc = literal.address;
                     if (validf3(simpleLoc))
                     {
                         obj.format = 3;
@@ -431,7 +435,7 @@ bool createObjectCodeForInstruction(parsedLine &pl, map<string, OpCode> &opTab, 
         }
         else
         {
-            obj = pcOrBaseRelativeAddressing(symTab, opTab, locationCtr, pl, 3, 0, modi, base, baseRegister);
+            obj = pcOrBaseRelativeAddressing(symbolTable, opTab, locationCtr, pl, 3, 0, modi, base, baseRegister);
         }
         pl.objCode = obj;
         if (pl.opcode == "LDB")
@@ -449,11 +453,11 @@ bool createObjectCodeForInstruction(parsedLine &pl, map<string, OpCode> &opTab, 
 ll baseRegister = 0;
 bool base = false;
 
-bool Pass2(map<string, Symbol> &symTab, map<string, OpCode> &opTab, map<string, Literal> &litTab, map<string, BlockTable> &blkTab, map<string, ll> &regs, vector<parsedLine> &v, ll &programL, vector<ModificationRecord> &modi)
+bool Pass2(map<string, Symbol> &symbolTable, map<string, OpCode> &opTab, map<string, Literal> &literalTable, map<string, BlockTable> &blockTable, map<string, ll> &registers, vector<parsedLine> &v, ll &programL, vector<ModificationRecord> &modi)
 {
     ll startingAddress = 0, locationCtr = 0, programLength = 0; // by default start address is 0
     bool err = false;
-    BlockTable active = blkTab["DEFAULT"];
+    BlockTable active = blockTable["DEFAULT"];
     ll numLines = v.size(); // number of parsed lines
     // iterate through the vector of parsed lines
     for (ll i = 0; i < numLines; i++)
@@ -467,7 +471,7 @@ bool Pass2(map<string, Symbol> &symTab, map<string, OpCode> &opTab, map<string, 
         else if (line.opcode == "END")
         {
             // Get and Set the program length
-            computeProgramLength(blkTab, programLength);
+            computeProgramLength(blockTable, programLength);
             programL = programLength;
         }
         else if (line.opcode == "EQU" || line.opcode == "LTORG")
@@ -480,14 +484,14 @@ bool Pass2(map<string, Symbol> &symTab, map<string, OpCode> &opTab, map<string, 
         }
         else if (line.opcode == "USE")
         {
-            blkTab[active.name].locationCtr = locationCtr;
-            active = blkTab[line.op1]; // block error
+            blockTable[active.name].locationCtr = locationCtr;
+            active = blockTable[line.op1]; // block error
             locationCtr = active.locationCtr;
         }
         else if (line.opcode == "BASE")
         {
-            auto sym = symTab.find(line.op1);
-            if (sym == symTab.end())
+            auto sym = symbolTable.find(line.op1);
+            if (sym == symbolTable.end())
             {
                 line.err = "Symbol Undefined";
                 err = true;
@@ -550,7 +554,7 @@ bool Pass2(map<string, Symbol> &symTab, map<string, OpCode> &opTab, map<string, 
             ll pcRel = active.startingAddress + locationCtr;
             if (op.possibleFormat == FORMAT_2)
             {
-                err = createObjectCodeWithRegisters(line, opTab, regs);
+                err = createObjectCodeWithRegisters(line, opTab, registers);
                 line.objCode.format = 2;
                 line.objCode.ni = 0;
                 line.objCode.xbpe = 0;
@@ -562,7 +566,7 @@ bool Pass2(map<string, Symbol> &symTab, map<string, OpCode> &opTab, map<string, 
             }
             else
             {
-                err = createObjectCodeForInstruction(line, opTab, symTab, litTab, pcRel, modi, base, baseRegister);
+                err = createObjectCodeForInstruction(line, opTab, symbolTable, literalTable, pcRel, modi, base, baseRegister);
             }
         }
         v[i] = line;

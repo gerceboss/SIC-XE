@@ -9,7 +9,7 @@
 #include "structs.h"
 
 using namespace std;
-#define ll long long int
+#define ll long long
 
 // prints a new line
 void print()
