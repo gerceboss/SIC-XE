@@ -1,6 +1,8 @@
 #include <iostream>
 #include "tables.h"
 #include "utils.h"
+#include "parser.h"
+#include "pass_1.h"
 using namespace std;
 #define ll long long
 int main(int argc, char *argv[])
@@ -21,7 +23,7 @@ int main(int argc, char *argv[])
     freopen((output_file).c_str(), "w", stdout);
 
     // storing the parsed instructions
-    vector<parsedLine> vec;
+    vector<parsedLine> pls; // parsed lines
     map<string, OpCode> opCodeTable;
     map<string, Symbol> symbolTable;
     map<string, BlockTable> blockTable;
@@ -49,10 +51,32 @@ int main(int argc, char *argv[])
         {
             break;
         }
-        // make a parsing function in the parser.h file
+        parsedLine parsedLine = parseLine(s);
+        if (parsedLine.err != "")
+        {
+            cout << "ERROR on line " << parsedLine.location << " : " << parsedLine.err << endl;
+        }
+        else if (!parsedLine.isEmpty && !parsedLine.isComment && !(parsedLine.label == "" && parsedLine.opcode == "" && parsedLine.op1 == "" && parsedLine.op2 == ""))
+            pls.push_back(parsedLine);
     }
-    // after reading try to do pass1 and pass2  inside a try-catch block
+    // execute pass1 and pass2 inside a try-catch block
 
+    try
+    {
+        cout << "-------------------------------------------------------------------\n"
+             << "|                          INTERMEDIATE FILE                      |\n"
+             << "-------------------------------------------------------------------\n\n";
+        bool err = Pass1(pls, opCodeTable, symbolTable, blockTable, literalTable, programName, startingAddress);
+        if (!err)
+        {
+            // execute pass_2
+        }
+    }
+    catch (char *err)
+    {
+        cout << "Error in the pass :" << err << endl;
+        return 1;
+    }
     // if there is no error then write in the output file
     return 0;
 }

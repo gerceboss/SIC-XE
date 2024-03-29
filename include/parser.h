@@ -17,7 +17,7 @@ bool format_1(string s)
 /*
     parses the read line as needed to process and generate tables and object code
     1.Iterate and skip the blank spaces.
-    2..Create array of 5 strings to store the parsed line.
+    2.Create array of 5 strings to store the parsed line.
 
     According to the array sizes:
       size  => empty line
