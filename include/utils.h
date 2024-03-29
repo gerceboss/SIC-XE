@@ -11,6 +11,7 @@
 using namespace std;
 #define ll long long int
 
+// prints a new line
 void print()
 {
     cout << endl;
@@ -105,7 +106,6 @@ string print_hex_from_bin(int str)
 {
     char buf[2];
     sprintf(buf, "%0x", str);
-    // cout << "in print hex: " + string(buf) << endl;
     return string(buf);
 }
 
@@ -147,7 +147,7 @@ void computeProgramLength(map<string, BlockTable> &blkTab, ll &programLength)
 // Isko sahi karna hai
 pair<int, int> genObjcode(ObjCode obj, parsedLine &pl)
 {
-    if (obj.isWord != -13371337)
+    if (obj.isWord != -10)
     {
         return {obj.isWord, 3};
     }

@@ -39,7 +39,7 @@ struct ObjCode
     bool isData = false;       // has some operand
     bool hasReg = false;       // 2 byte instruction
     bool isOnlyOpcode = false; // 1 byte instruction
-    ll isWord = -13371337;
+    ll isWord = -10;
     ll opCode;
     ll displacement;
     ll reg1, reg2;
