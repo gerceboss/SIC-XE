@@ -1,8 +1,10 @@
 #include <iostream>
-#include "tables.h"
-#include "utils.h"
-#include "parser.h"
-#include "pass_1.h"
+#include "include/tables.h"
+#include "include/parser.h"
+#include "include/parser.h"
+#include "include/pass_1.h"
+#include "include/programGenerator.h"
+#include "include/pass_2.h"
 using namespace std;
 #define ll long long
 int main(int argc, char *argv[])
@@ -69,7 +71,23 @@ int main(int argc, char *argv[])
         bool err = Pass1(pls, opCodeTable, symbolTable, blockTable, literalTable, programName, startingAddress);
         if (!err)
         {
-            // execute pass_2
+            cout << "\n\n";
+            cout << "--- symTab ---\n";
+            printTable(symbolTable);
+            cout << "\n\n--- blkTab ---\n";
+            printTable(blockTable);
+            err = Pass2(symbolTable, opCodeTable, literalTable, blockTable, registers, pls, programLength, modifications);
+            print();
+            cout << "-------------------------------------------------------------------\n"
+                 << "|                          OBJECT PROGRAM                          |\n"
+                 << "-------------------------------------------------------------------\n\n";
+        }
+        if (!err)
+        {
+            writeHeaderRecord(programName, startingAddress, programLength);
+            writeTextRecord(blockTable, pls);
+            writeModificationRecord(modifications);
+            writeEndRecord(startingAddress);
         }
     }
     catch (char *err)
