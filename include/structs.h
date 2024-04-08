@@ -10,6 +10,15 @@ const unsigned ll FORMAT_1 = 1;
 const unsigned ll FORMAT_2 = 2;
 const unsigned ll FORMAT_3_4 = 3;
 
+struct BlockTable
+{
+    string name = "DEFAULT"; // block with no name is named "DEFAULT"s
+    ll number = 0;
+    ll locationCtr = 0;
+    ll startingAddress = 0; // default as of now
+    ll blockLength;
+};
+
 struct OpCode
 {
     string mnemonic;
@@ -46,15 +55,6 @@ struct ObjCode
     ll ni, xbpe;
     ll format;
     string data;
-};
-
-struct BlockTable
-{
-    string name = "DEFAULT"; // block with no name is named "DEFAULT"s
-    ll number = 0;
-    ll locationCtr = 0;
-    ll startingAddress = 0; // default as of now
-    ll blockLength;
 };
 
 struct parsedLine

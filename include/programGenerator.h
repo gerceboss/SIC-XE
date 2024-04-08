@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "tables.h"
 #include <string>
+#include <sstream>
 #include <iomanip>
 
 TextRecord tex;

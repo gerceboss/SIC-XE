@@ -1,10 +1,10 @@
 #include <iostream>
-#include "include/tables.h"
-#include "include/parser.h"
-#include "include/parser.h"
-#include "include/pass_1.h"
-#include "include/programGenerator.h"
-#include "include/pass_2.h"
+#include "tables.h"
+#include "parser.h"
+#include "parser.h"
+#include "pass_1.h"
+#include "programGenerator.h"
+#include "pass_2.h"
 using namespace std;
 #define ll long long
 int main(int argc, char *argv[])

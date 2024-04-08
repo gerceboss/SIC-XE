@@ -8,6 +8,11 @@
 using namespace std;
 #define ll long long
 
+// manage blocks at the END
+bool comparator(BlockTable block1, BlockTable block2)
+{
+    return block1.number < block2.number;
+}
 map<string, ll> registers;
 void buildRegMap()
 {
@@ -107,6 +112,7 @@ void buildOpTable(map<string, OpCode> &opTable)
     mnemonic = "HIO";
     op->mnemonic = mnemonic;
     op->opcode = 0xF4;
+
     op->possibleFormat = FORMAT_1;
     opTable[mnemonic] = *op;
 
@@ -616,12 +622,6 @@ void manageBlocks(map<string, BlockTable> &blockTable, map<string, Symbol> &symb
 bool litsComparator(pair<ll, parsedLine> &p1, pair<ll, parsedLine> &p2)
 {
     return p1.second.location < p2.second.location;
-}
-
-// manage blocks at the END
-bool comparator(BlockTable block1, BlockTable block2)
-{
-    return block1.number < block2.number;
 }
 
 #endif
