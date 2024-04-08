@@ -18,7 +18,7 @@
 2f00 TOTAL RESW 1 
 
 
---- symTab ---
+--- symbolTable ---
 Name 	 Address in block
 COUNT 	 1d 
 FIRST 	 0 
@@ -28,7 +28,7 @@ TABLE2 	 1790
 TOTAL 	 2f00 
 
 
---- blkTab ---
+--- blockTable ---
 DEFAULT 2f03 0 0 
 
 -------------------------------------------------------------------

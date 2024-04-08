@@ -72,9 +72,9 @@ int main(int argc, char *argv[])
         if (!err)
         {
             cout << "\n\n";
-            cout << "--- symTab ---\n";
+            cout << "--- symbolTable ---\n";
             printTable(symbolTable);
-            cout << "\n\n--- blkTab ---\n";
+            cout << "\n\n--- blockTable ---\n";
             printTable(blockTable);
             err = Pass2(symbolTable, opCodeTable, literalTable, blockTable, registers, pls, programLength, modifications);
             print();
